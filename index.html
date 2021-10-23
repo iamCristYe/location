@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Location</title>
+</head>
+
+<body>
+    <div id="speed"></div>
+    <div id="log"></div>
+</body>
+<style>
+    #speed {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 25px;
+    }
+
+    #log {
+        font-family: monospace;
+        font-size: 10px;
+    }
+</style>
+<script>
+    (function () {
+        let speed = 0;
+        let lastPos = [0, 0];
+        let currentPos = [0, 0];
+        let intervalInSecond = 1;
+
+        var options = {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+        };
+
+        function success(pos) {
+            var crd = pos.coords;
+
+            console.log('Your current position is:');
+            console.log(`Latitude : ${crd.latitude}`);
+            console.log(`Longitude: ${crd.longitude}`);
+            console.log(`More or less ${crd.accuracy} meters.`);
+            currentPos[0] = crd.latitude;
+            currentPos[1] = crd.longitude;
+            speed = getDistanceFromLatLonInKm(currentPos[0], currentPos[1], lastPos[0], lastPos[1]) / (intervalInSecond / 3600);
+            speed = speed.toString.padStart(3, "0") + "km/h";
+            document.getElementById("speed").innerText = speed;
+
+            let h = new Date().getHours().toString().padStart(2, "0")
+            let m = new Date().getMinutes().toString().padStart(2, "0")
+            let s = new Date().getSeconds().toString().padStart(2, "0")
+            let latitude7 = currentPos[0].toFixed(7);
+            let longitude7 = currentPos[1].toFixed(7);
+            document.getElementById("log").innerText = `${h}:${m}:${s}\t${speed}\t${latitude7}\t${longitude7}\t${crd.accuracy}\n` + document.getElementById("log").innerText;
+
+            lastPos[0] = currentPos[0]
+            lastPos[1] = currentPos[1]
+
+        }
+
+        function error(err) {
+            console.warn(`ERROR(${err.code}): ${err.message}`);
+        }
+
+        // https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
+        // https://en.wikipedia.org/wiki/Haversine_formula
+        // https://stackoverflow.com/questions/1420045/how-to-find-distance-from-the-latitude-and-longitude-of-two-locations/1422562#1422562
+        // https://en.wikipedia.org/wiki/Vincenty's_formulae
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+            var R = 6371; // Radius of the earth in km
+            var dLat = deg2rad(lat2 - lat1);  // deg2rad below
+            var dLon = deg2rad(lon2 - lon1);
+            var a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2)
+                ;
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            var d = R * c; // Distance in km
+            return d;
+        }
+
+        function deg2rad(deg) {
+            return deg * (Math.PI / 180)
+        }
+        setInterval(
+            function () { navigator.geolocation.getCurrentPosition(success, error, options) }
+            , intervalInSecond * 1000);
+    })();
+
+</script>
