@@ -42,7 +42,7 @@
             currentPos[0] = crd.latitude;
             currentPos[1] = crd.longitude;
             speed = getDistanceFromLatLonInKm(currentPos[0], currentPos[1], lastPos[0], lastPos[1]) / (intervalInSecond / 3600);
-            speed = speed.toString().padStart(3, "0") + "km/h";
+            speed = speed.toFixed(1).padStart(3, "0") + "km/h";
             document.getElementById("speed").innerText = speed;
 
             let h = new Date().getHours().toString().padStart(2, "0")
